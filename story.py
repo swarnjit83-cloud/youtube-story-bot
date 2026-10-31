@@ -60,7 +60,7 @@ def _ask(prompt, tokens=9000):
     import anthropic
     r = anthropic.Anthropic().messages.create(model=P.MODEL, max_tokens=tokens,
                                               messages=[{"role": "user", "content": prompt}])
-    return _json(r.content[0].text)
+    return _json(P.reply_text(r))
 
 
 # ---------- drawing ----------

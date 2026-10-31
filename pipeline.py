@@ -36,6 +36,11 @@ in the narration. Return ONLY JSON:
 Use 8-12 scenes."""
 
 
+def reply_text(msg):
+    """Join the text blocks of a Claude reply (skips thinking blocks)."""
+    return "".join(b.text for b in msg.content if getattr(b, "type", "") == "text")
+
+
 def slugify(s):
     return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")[:40] or "video"
 
@@ -45,7 +50,7 @@ def write_script(topic, notes, d):
     msg = anthropic.Anthropic().messages.create(
         model=MODEL, max_tokens=8000,
         messages=[{"role": "user", "content": PROMPT.format(topic=topic, notes=notes or "-")}])
-    text = msg.content[0].text
+    text = reply_text(msg)
     data = json.loads(text[text.index("{"): text.rindex("}") + 1])
     (d / "script.json").write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     return data
@@ -132,7 +137,7 @@ def make_shorts(d, n=3, prompt=None, slide_fn=None, zoom=False):
         script = (d / "script.json").read_text(encoding="utf-8")
         msg = anthropic.Anthropic().messages.create(model=MODEL, max_tokens=6000,
             messages=[{"role": "user", "content": (prompt or SHORTS_PROMPT).format(n=n, script=script)}])
-        text = msg.content[0].text
+        text = reply_text(msg)
         sp.write_text(json.dumps(json.loads(text[text.index("{"): text.rindex("}") + 1]), ensure_ascii=False, indent=2), encoding="utf-8")
     for i, sh in enumerate(json.loads(sp.read_text(encoding="utf-8"))["shorts"], 1):
         v = build_video(sh, d, f"short{i}", (1080, 1920), slide_fn, zoom)
@@ -154,7 +159,7 @@ def factcheck(data, d):
     import anthropic
     msg = anthropic.Anthropic().messages.create(model=MODEL, max_tokens=9000,
         messages=[{"role": "user", "content": CHECK_PROMPT.format(script=json.dumps(data, ensure_ascii=False))}])
-    text = msg.content[0].text
+    text = reply_text(msg)
     r = json.loads(text[text.index("{"): text.rindex("}") + 1])
     (d / "script.json").write_text(json.dumps(r["script"], ensure_ascii=False, indent=2), encoding="utf-8")
     (d / "factcheck.json").write_text(json.dumps({k: r[k] for k in ("confidence", "issues")}, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -167,7 +172,7 @@ def next_topic(done):
         f"Niche: {NICHE}. Suggest ONE new topic for a 5-7 minute Hindi explainer that Indian viewers search for often "
         f"and that stays accurate over time (avoid rates/deadlines that change). Already covered: {json.dumps(done, ensure_ascii=False)}. "
         'Return ONLY JSON: {"topic": "...(Hindi)", "notes": "audience and angle"}'}])
-    text = msg.content[0].text
+    text = reply_text(msg)
     return json.loads(text[text.index("{"): text.rindex("}") + 1])
 
 
