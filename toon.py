@@ -303,6 +303,9 @@ def prop(cr, kind, x, y, s, t=0.0):
     if kind == "apple":
         ellipse(cr, -9, -26, 26, 28); fill(cr, (215, 40, 45)); ellipse(cr, 9, -26, 26, 28); fill(cr, (225, 50, 55))
         cr.move_to(0, -52); cr.line_to(4, -66); stroke(cr, (100, 70, 40), 5); ellipse(cr, 14, -62, 14, 7); fill(cr, (80, 170, 70))
+    elif kind == "pomegranate":
+        ellipse(cr, 0, -32, 32, 30); fill(cr, (200, 40, 70)); ellipse(cr, -8, -40, 14, 12); fill(cr, (225, 70, 95), 0.7)
+        for i in range(5): a = -math.pi / 2 + (i - 2) * 0.5; cr.move_to(math.cos(a) * 8, -62); cr.line_to(math.cos(a) * 16, -76 + abs(i - 2) * 3); stroke(cr, (170, 30, 60), 6)
     elif kind == "mango":
         cr.save(); cr.rotate(-0.4); ellipse(cr, 0, -28, 22, 32); fill(cr, (250, 190, 40)); ellipse(cr, 4, -34, 14, 20); fill(cr, (255, 140, 50), 0.6); cr.restore()
         ellipse(cr, 8, -62, 12, 6); fill(cr, (70, 150, 60))
@@ -329,7 +332,7 @@ def prop(cr, kind, x, y, s, t=0.0):
     cr.restore()
 
 
-PROPS = ["apple", "mango", "banana", "ball", "star", "flower", "balloon", "heart", "fish"]
+PROPS = ["apple", "mango", "banana", "ball", "star", "flower", "balloon", "heart", "fish", "pomegranate"]
 
 
 # ---------------------------------------------------------------- audio -> mouth movement

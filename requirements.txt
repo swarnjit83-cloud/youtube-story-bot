@@ -1,5 +1,7 @@
 anthropic>=0.40
 edge-tts>=6.1
 Pillow>=10
+numpy>=1.26
+cairocffi>=1.6
 google-api-python-client>=2.100
 google-auth-oauthlib>=1.2

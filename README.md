@@ -1,46 +1,36 @@
-# Faceless Hindi explainer video pipeline
+# YouTube Hindi studio
 
-topic -> script (Claude) -> Hindi voiceover (edge-tts) -> slides (Pillow) -> video (ffmpeg) -> private upload.
-Each topic gives one 5-7 minute explainer plus 3 vertical Shorts cut from it.
+Our own cartoon studio plus an upload robot for **three separate YouTube channels** (see `channels.json`):
 
-## Setup
-1. `pip install -r requirements.txt`; install `ffmpeg`.
-2. Download Noto Sans Devanagari Bold to `fonts/NotoSansDevanagari-Bold.ttf` (or set `HINDI_FONT`).
-3. `export ANTHROPIC_API_KEY=...`
-4. For upload: create an OAuth "Desktop" client in Google Cloud, enable YouTube Data API v3, save as `client_secret.json`.
+| Channel | What it makes | Days (UTC) | Made for Kids |
+|---|---|---|---|
+| `kids` | Hindi learning lessons for ages 2-5 (letters, numbers, colours, animals...) | Mon, Wed, Fri | yes |
+| `stories` | Fictional cartoon stories with a recurring cast | Tue, Sat | yes |
+| `explainers` | Money / rights / how-things-work videos (fact-checked) | Thu | no |
 
-## Use
-    python pipeline.py make "your topic" --notes "audience and angle"
-    python pipeline.py shorts output/<slug>          # 3 vertical Shorts from the same script
-    python pipeline.py upload output/<slug>          # uploads video + Shorts as PRIVATE; add --kids only for Made for Kids content
+Every episode also gets 3 Shorts. Everything is uploaded **private**; you review it in YouTube Studio and press Publish.
 
-`topics.csv` holds starter topics; run them all with `python pipeline.py batch topics.csv`.
+## How it is built
+- `toon.py` is our own 2D cartoon engine (consistent vector characters, blinking, lip-sync, backgrounds, lesson cards).
+- `studio.py` writes the script (Claude), checks it, makes the voices (Hindi text-to-speech), renders the scenes and uploads.
+- `cast.json` holds the characters and their voices; `channels.json` holds the channels and schedule.
+- `.github/workflows/weekly-video.yml` runs it every day; a channel only runs on its own days.
 
-For money, legal or health topics, check every number and rule against an official source (RBI, government sites) before publishing. Always read `script.json` and watch the video before publishing. Add your own examples and opinion; templated
-uploads risk demonetisation under YouTube's inauthentic-content policy.
+## Secrets (GitHub: Settings, Secrets and variables, Actions)
+`ANTHROPIC_API_KEY`, and one login token per channel: `YT_TOKEN_KIDS`, `YT_TOKEN_STORIES`, `YT_TOKEN_EXPLAINERS`.
+(The older `YT_TOKEN` is used for `stories` until `YT_TOKEN_STORIES` exists.) A channel without a token is skipped.
 
-## Weekly 5-hour routine
-Research and fact-check topics (1.5h), edit scripts (1.5h), review and fix videos (1h), thumbnails, upload, schedule (1h).
+## Add a channel's login (once per channel)
+1. Create the channel on YouTube (use a Brand Account channel, so each channel has its own login).
+2. On your computer, in this folder with `client_secret.json`: `python pipeline.py login --token token_kids.json`
+3. In the browser, pick the Google account and **the channel** the videos should go to.
+4. Copy the contents of the new token file into the matching GitHub secret.
 
-## Hands-off mode (GitHub Actions)
-`.github/workflows/weekly-video.yml` runs `python pipeline.py autopilot` every Tuesday and Friday: it picks a new topic
-(never repeating `done.json`), writes the script, fact-checks it with a second pass, renders the video plus 3 Shorts and
-uploads them. If the fact-check confidence is low, it skips the topic and writes `REVIEW_NEEDED.txt` instead.
+Renaming a channel later does not affect the login.
 
-One-time setup (about 20 minutes):
-1. Run `python pipeline.py login` once on your computer to sign in to Google; this creates `token.json`.
-2. In Google Cloud, set the OAuth consent screen to **In production**, otherwise the login expires after 7 days.
-3. In the GitHub repo add secrets `ANTHROPIC_API_KEY`, `YT_CLIENT_SECRET` (contents of `client_secret.json`) and `YT_TOKEN` (contents of `token.json`).
-4. Optional repo variables: `NICHE`, and `YT_PRIVACY` (`private` by default).
+## Useful commands
+    python studio.py run kids          # make and upload one channel now (private)
+    python story.py preview            # old picture preview (kept for reference)
 
-Limits to know about: YouTube locks videos uploaded through the API to **private** until the Google Cloud project passes
-YouTube's API compliance audit, so until then you must tap Publish in YouTube Studio (about 2 minutes a video). Fully
-automatic, unreviewed publishing also carries a real risk of factual errors and of demonetisation as mass-produced content.
-
-## Fiction story mode (default for the weekly run, no cost beyond the Claude API)
-`python story.py make` writes the next episode of a fictional Hindi series with a recurring cast (`cast.json`), runs a
-safety/originality check instead of a fact-check, draws every scene itself (scenery, characters, captions, slow zoom;
-no paid image service) and also makes 3 cliffhanger Shorts. `python story.py autopilot` does the same and uploads.
-Edit `cast.json` to change the series name and characters. Episodes alternate between light suspense and comedy.
-Set the repo variable `MODE=explainer` to run the money/rights explainers instead.
-The drawn visuals are deliberately simple; quality comes from the story and voice. Upgrade visuals later if the channel grows.
+YouTube keeps API uploads private until the Google Cloud project passes its audit, so each video needs your tap on Publish.
+Fictional and children's content only uses our own drawn characters; never use real people's footage, voices or likenesses.

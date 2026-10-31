@@ -1,0 +1,42 @@
+{
+  "kids": {
+    "title": "Kids learning",
+    "format": "learning",
+    "days": [
+      1,
+      3,
+      5
+    ],
+    "made_for_kids": true,
+    "category": "27",
+    "token_env": [
+      "YT_TOKEN_KIDS"
+    ]
+  },
+  "stories": {
+    "title": "Story cartoons",
+    "format": "stories",
+    "days": [
+      2,
+      6
+    ],
+    "made_for_kids": true,
+    "category": "1",
+    "token_env": [
+      "YT_TOKEN_STORIES",
+      "YT_TOKEN"
+    ]
+  },
+  "explainers": {
+    "title": "Explainers",
+    "format": "explainers",
+    "days": [
+      4
+    ],
+    "made_for_kids": false,
+    "category": "27",
+    "token_env": [
+      "YT_TOKEN_EXPLAINERS"
+    ]
+  }
+}

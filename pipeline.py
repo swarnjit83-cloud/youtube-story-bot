@@ -170,7 +170,7 @@ def factcheck(data, d):
 
 def next_topic(done):
     import anthropic
-    msg = anthropic.Anthropic().messages.create(model=MODEL, max_tokens=500, messages=[{"role": "user", "content":
+    msg = anthropic.Anthropic().messages.create(model=MODEL, max_tokens=3000, messages=[{"role": "user", "content":
         f"Niche: {NICHE}. Suggest ONE new topic for a 5-7 minute Hindi explainer that Indian viewers search for often "
         f"and that stays accurate over time (avoid rates/deadlines that change). Already covered: {json.dumps(done, ensure_ascii=False)}. "
         'Return ONLY JSON: {"topic": "...(Hindi)", "notes": "audience and angle"}'}])
@@ -202,13 +202,13 @@ def make(topic, notes=""):
           f"python pipeline.py upload {d}")
 
 
-def login():
-    """Sign in to Google once and save token.json."""
+def login(token_file="token.json"):
+    """Sign in to Google once and save the token file (one per channel)."""
     from google_auth_oauthlib.flow import InstalledAppFlow
     from google.oauth2.credentials import Credentials
     from google.auth.transport.requests import Request
     scopes = ["https://www.googleapis.com/auth/youtube.upload"]
-    tok = Path("token.json")
+    tok = Path(token_file)
     creds = Credentials.from_authorized_user_file(tok, scopes) if tok.exists() else None
     if creds and not creds.valid and creds.refresh_token:
         creds.refresh(Request()); tok.write_text(creds.to_json())
@@ -251,13 +251,13 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(); sub = ap.add_subparsers(dest="cmd", required=True)
     m = sub.add_parser("make"); m.add_argument("topic"); m.add_argument("--notes", default="")
     sh = sub.add_parser("shorts"); sh.add_argument("dir"); sh.add_argument("-n", type=int, default=3)
-    sub.add_parser("autopilot"); sub.add_parser("login")
+    sub.add_parser("autopilot"); lg = sub.add_parser("login"); lg.add_argument("--token", default="token.json")
     b = sub.add_parser("batch"); b.add_argument("csv")
     u = sub.add_parser("upload"); u.add_argument("dir"); u.add_argument("--kids", action="store_true", help="declare Made for Kids")
     a = ap.parse_args()
     if a.cmd == "make": make(a.topic, a.notes)
     elif a.cmd == "autopilot": autopilot()
-    elif a.cmd == "login": login(); print("Signed in. token.json saved.")
+    elif a.cmd == "login": login(a.token); print(f"Signed in. {a.token} saved.")
     elif a.cmd == "shorts": make_shorts(a.dir, a.n)
     elif a.cmd == "upload": upload(a.dir, a.kids)
     else:

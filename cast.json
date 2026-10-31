@@ -11,56 +11,103 @@
       ],
       "outfit": [
         220,
-        90,
+        70,
         60
       ],
-      "look": "a clever 10-year-old Indian village boy with short black hair, big bright eyes, red kurta and beige shorts"
+      "kind": "boy",
+      "hair": [
+        30,
+        25,
+        25
+      ],
+      "pants": [
+        60,
+        80,
+        140
+      ]
     },
     {
       "name": "सरपंच जी",
       "role": "गाँव के मुखिया, थोड़े भोले",
       "skin": [
-        200,
+        205,
         150,
         110
       ],
       "outfit": [
+        245,
+        245,
+        240
+      ],
+      "kind": "headman",
+      "hair": [
         240,
         240,
         240
-      ],
-      "look": "a plump middle-aged Indian village headman with a big white moustache, white kurta-dhoti and an orange turban"
+      ]
     },
     {
       "name": "दादी माँ",
       "role": "समझदार, रहस्यमयी कहानियाँ सुनाती हैं",
       "skin": [
-        210,
-        165,
-        130
+        215,
+        168,
+        135
       ],
       "outfit": [
         150,
-        80,
+        70,
         160
       ],
-      "look": "a kind elderly Indian grandmother with grey hair in a bun, purple saree and round spectacles"
+      "kind": "grandma",
+      "hair": [
+        200,
+        200,
+        205
+      ]
     },
     {
       "name": "बिल्लू",
       "role": "शरारती बिल्ली",
       "skin": [
-        120,
-        120,
-        120
+        125,
+        125,
+        130
       ],
       "outfit": [
-        120,
-        120,
-        120
+        0,
+        0,
+        0
       ],
-      "look": "a mischievous grey tabby cat with yellow eyes"
+      "kind": "cat"
     }
   ],
-  "style": "children's picture-book illustration, warm colours, soft lighting, gentle watercolour texture, expressive friendly faces, Indian village setting, no text, no watermark"
+  "style": "children's picture-book illustration, warm colours, soft lighting, gentle watercolour texture, expressive friendly faces, Indian village setting, no text, no watermark",
+  "voices": {
+    "narrator": {
+      "voice": "hi-IN-SwaraNeural",
+      "rate": "-5%",
+      "pitch": "+0Hz"
+    },
+    "चंपक": {
+      "voice": "hi-IN-MadhurNeural",
+      "rate": "+5%",
+      "pitch": "+35Hz"
+    },
+    "सरपंच जी": {
+      "voice": "hi-IN-MadhurNeural",
+      "rate": "-8%",
+      "pitch": "-18Hz"
+    },
+    "दादी माँ": {
+      "voice": "hi-IN-SwaraNeural",
+      "rate": "-10%",
+      "pitch": "-12Hz"
+    },
+    "बिल्लू": {
+      "voice": "hi-IN-SwaraNeural",
+      "rate": "+10%",
+      "pitch": "+55Hz"
+    }
+  }
 }
