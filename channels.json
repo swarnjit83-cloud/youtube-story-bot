@@ -10,7 +10,8 @@
     "made_for_kids": true,
     "category": "27",
     "token_env": [
-      "YT_TOKEN_KIDS"
+      "YT_TOKEN_KIDS",
+      "YT_TOKEN"
     ]
   },
   "stories": {
@@ -23,8 +24,7 @@
     "made_for_kids": false,
     "category": "1",
     "token_env": [
-      "YT_TOKEN_STORIES",
-      "YT_TOKEN"
+      "YT_TOKEN_STORIES"
     ]
   },
   "explainers": {

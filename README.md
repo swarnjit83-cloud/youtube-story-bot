@@ -18,7 +18,7 @@ Every episode also gets 3 Shorts. Everything is uploaded **private**; you review
 
 ## Secrets (GitHub: Settings, Secrets and variables, Actions)
 `ANTHROPIC_API_KEY`, and one login token per channel: `YT_TOKEN_KIDS`, `YT_TOKEN_STORIES`, `YT_TOKEN_EXPLAINERS`.
-(The older `YT_TOKEN` is used for `stories` until `YT_TOKEN_STORIES` exists.) A channel without a token is skipped.
+(The first login, `YT_TOKEN`, belongs to the `kids` channel until `YT_TOKEN_KIDS` exists.) A channel without a token is skipped, so stories never go to the kids' channel.
 
 ## Add a channel's login (once per channel)
 1. Create the channel on YouTube (use a Brand Account channel, so each channel has its own login).
