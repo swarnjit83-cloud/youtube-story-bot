@@ -151,13 +151,14 @@ def ai_image(prompt, size, seed):
     gw, gh = (1280, 720) if size[0] > size[1] else (720, 1280)
     url = (f"https://image.pollinations.ai/prompt/{urllib.parse.quote(prompt)}"
            f"?width={gw}&height={gh}&model=flux&seed={seed}&nologo=true")
-    for attempt in range(3):
+    time.sleep(6)  # the free service allows roughly one request at a time
+    for attempt in range(4):
         try:
             data = urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"}), timeout=120).read()
             return Image.open(io.BytesIO(data)).convert("RGB")
         except Exception as e:
             print(f"image attempt {attempt + 1} failed: {e}")
-            time.sleep(6 * (attempt + 1))
+            time.sleep(10 * (attempt + 1))
     return None
 
 
