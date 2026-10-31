@@ -56,7 +56,7 @@ def _json(text):
     return json.loads(text[text.index("{"): text.rindex("}") + 1])
 
 
-def _ask(prompt, tokens=9000):
+def _ask(prompt, tokens=16000):
     import anthropic
     r = anthropic.Anthropic().messages.create(model=P.MODEL, max_tokens=tokens,
                                               messages=[{"role": "user", "content": prompt}])

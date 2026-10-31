@@ -48,7 +48,7 @@ def slugify(s):
 def write_script(topic, notes, d):
     import anthropic
     msg = anthropic.Anthropic().messages.create(
-        model=MODEL, max_tokens=8000,
+        model=MODEL, max_tokens=16000,
         messages=[{"role": "user", "content": PROMPT.format(topic=topic, notes=notes or "-")}])
     text = reply_text(msg)
     data = json.loads(text[text.index("{"): text.rindex("}") + 1])
@@ -135,7 +135,7 @@ def make_shorts(d, n=3, prompt=None, slide_fn=None, zoom=False):
     sp = d / "shorts.json"
     if not sp.exists():
         script = (d / "script.json").read_text(encoding="utf-8")
-        msg = anthropic.Anthropic().messages.create(model=MODEL, max_tokens=6000,
+        msg = anthropic.Anthropic().messages.create(model=MODEL, max_tokens=12000,
             messages=[{"role": "user", "content": (prompt or SHORTS_PROMPT).format(n=n, script=script)}])
         text = reply_text(msg)
         sp.write_text(json.dumps(json.loads(text[text.index("{"): text.rindex("}") + 1]), ensure_ascii=False, indent=2), encoding="utf-8")
@@ -157,7 +157,7 @@ Script:
 
 def factcheck(data, d):
     import anthropic
-    msg = anthropic.Anthropic().messages.create(model=MODEL, max_tokens=9000,
+    msg = anthropic.Anthropic().messages.create(model=MODEL, max_tokens=16000,
         messages=[{"role": "user", "content": CHECK_PROMPT.format(script=json.dumps(data, ensure_ascii=False))}])
     text = reply_text(msg)
     r = json.loads(text[text.index("{"): text.rindex("}") + 1])
