@@ -226,6 +226,9 @@ def make_explainer(key, cfg):
     return d, items, data
 
 
+LIMIT_ERRORS = ("uploadLimitExceeded", "quotaExceeded", "dailyLimitExceeded", "rateLimitExceeded")
+
+
 def run_channel(key, cfg, creds):
     res = make_explainer(key, cfg) if cfg["format"] == "explainers" else make_episode(key, cfg)
     if res is None:
@@ -233,9 +236,18 @@ def run_channel(key, cfg, creds):
     d, items, data = res
     kids = cfg.get("made_for_kids", False)
     desc = data.get("description", "")
-    for f, title in items:
+    for n, (f, title) in enumerate(items):
         short = title.endswith("#Shorts")
-        yt.upload(creds, f, title, desc + ("\n\n#Shorts" if short else ""), data.get("tags", []), kids, cfg.get("category", "27"))
+        try:
+            yt.upload(creds, f, title, desc + ("\n\n#Shorts" if short else ""), data.get("tags", []), kids, cfg.get("category", "27"))
+        except Exception as e:
+            if not any(x in str(e) for x in LIMIT_ERRORS):
+                raise
+            if n == 0:  # the main video did not go up: forget this topic so tomorrow retries it
+                save_state(key, load_state(key)[:-1])
+                raise RuntimeError("YouTube upload limit reached before the main video; will retry on the next run") from e
+            print(f"[{key}] YouTube daily upload limit reached; {len(items) - n} Short(s) skipped for this episode")
+            break
 
 
 def run(only=None):
