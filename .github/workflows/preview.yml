@@ -20,6 +20,8 @@ jobs:
       - name: Make sample pictures
         env:
           HINDI_FONT: /usr/share/fonts/truetype/noto/NotoSansDevanagari-Bold.ttf
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
         run: python story.py preview
       - name: Save pictures to the repo
         run: |

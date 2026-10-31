@@ -29,7 +29,7 @@ Return ONLY JSON:
 {{"title": "...(Hindi, under 70 chars, curiosity-driven)", "description": "...(Hindi, 2 short paragraphs; first line must say this is a fictional story)",
  "tags": ["..."],
  "scenes": [{{"setting": one of {settings}, "mood": one of {moods}, "characters": ["names from the cast present in the scene, max 2"],
-   "caption": "one short line shown on screen", "image_prompt": "ENGLISH description of what the picture shows: the action, place, time of day and mood (max 40 words, no character appearance details, no text in the picture)", "narration": "spoken text for this scene (about 100-150 words)"}}]}}
+   "caption": "one short line shown on screen, in Devanagari letters only (no English letters)", "image_prompt": "ENGLISH description of what the picture shows: the action, place, time of day and mood (max 40 words, no character appearance details, no text in the picture)", "narration": "spoken text for this scene (about 100-150 words)"}}]}}
 Use 10-14 scenes."""
 
 CHECK = """Review this fictional Hindi story script for a general YouTube audience. Fix anything that mentions real people,
@@ -144,22 +144,51 @@ def drawn_scene(sc, path, size=(1920, 1080)):
     img.save(path)
 
 
-def ai_image(prompt, size, seed):
-    """Free AI illustration (Pollinations). Returns a PIL image or None so the caller can fall back to drawing."""
+def _cloudflare_image(prompt):
+    """Cloudflare Workers AI (FLUX.1 schnell). Needs CF_ACCOUNT_ID and CF_API_TOKEN. No watermark."""
+    import base64, io, json, os, time, urllib.request
+    from PIL import Image
+    acct, tok = os.environ.get("CF_ACCOUNT_ID"), os.environ.get("CF_API_TOKEN")
+    if not acct or not tok:
+        return None
+    url = f"https://api.cloudflare.com/client/v4/accounts/{acct}/ai/run/@cf/black-forest-labs/flux-1-schnell"
+    body = json.dumps({"prompt": prompt[:2000], "steps": 6}).encode()
+    for attempt in range(4):
+        try:
+            req = urllib.request.Request(url, data=body, headers={"Authorization": f"Bearer {tok}", "Content-Type": "application/json"})
+            r = json.loads(urllib.request.urlopen(req, timeout=120).read())
+            return Image.open(io.BytesIO(base64.b64decode(r["result"]["image"]))).convert("RGB")
+        except Exception as e:
+            print(f"cloudflare image attempt {attempt + 1} failed: {e}")
+            time.sleep(8 * (attempt + 1))
+    return None
+
+
+def _pollinations_image(prompt, size, seed):
+    """Free but adds a logo to the picture, so it is used only when USE_POLLINATIONS=1."""
     import io, time, urllib.parse, urllib.request
     from PIL import Image
     gw, gh = (1280, 720) if size[0] > size[1] else (720, 1280)
     url = (f"https://image.pollinations.ai/prompt/{urllib.parse.quote(prompt)}"
            f"?width={gw}&height={gh}&model=flux&seed={seed}&nologo=true")
-    time.sleep(6)  # the free service allows roughly one request at a time
+    time.sleep(6)
     for attempt in range(4):
         try:
             data = urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"}), timeout=120).read()
             return Image.open(io.BytesIO(data)).convert("RGB")
         except Exception as e:
-            print(f"image attempt {attempt + 1} failed: {e}")
+            print(f"pollinations attempt {attempt + 1} failed: {e}")
             time.sleep(10 * (attempt + 1))
     return None
+
+
+def ai_image(prompt, size, seed):
+    """A PIL image, or None so the caller falls back to the drawn scene."""
+    import os
+    im = _cloudflare_image(prompt)
+    if im is None and os.environ.get("USE_POLLINATIONS") == "1":
+        im = _pollinations_image(prompt, size, seed)
+    return im
 
 
 def full_prompt(sc):
