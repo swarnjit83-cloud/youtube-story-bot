@@ -39,14 +39,15 @@ Return ONLY JSON:
    "card": {{...}} (optional), "narration": "spoken text, 1-3 short sentences"}}]}}
 Use 14-20 scenes."""
 
-STORY = """You write episodes of a fictional Hindi cartoon story series for children called "{series}".
+STORY = """You write episodes of a fictional Hindi cartoon story series for a general audience (teenagers and adults), called "{series}".
 This is episode {n}. Genre this time: {genre}. Cast (use 1-3 in a scene): {cast}
 Earlier episodes (do not repeat plots): {past}
 
-Write an original story in simple, vivid spoken Hindi (Devanagari), 6-8 minutes when read aloud, with a hook in the first
-sentence, rising tension or comedy, dialogue between the characters, and a surprising but fair twist at the end with a small
-good lesson. Fictional characters only: never mention real people, organisations, events, religion or politics. Nothing violent
-or frightening beyond very mild suspense.
+Write an original story in vivid, natural spoken Hindi (Devanagari), 6-8 minutes when read aloud, for grown-up viewers: a gripping
+hook in the first sentence, believable village characters with real motives, sharp humour or real suspense, dialogue, and a clever
+twist at the end. Themes can be mystery, irony, family tension, greed, jealousy, friendship or a puzzle solved by wit. Keep it clean:
+no sexual content, no graphic violence, no hate, nothing aimed at young children. Fictional characters only: never mention real people,
+organisations, events, religion or politics.
 Return ONLY JSON:
 {{"title": "...(Hindi, under 70 chars, curiosity-driven)", "description": "...(Hindi, 2 short paragraphs; first line says this is a fictional story; do not write that it is made for kids or children)",
  "tags": ["..."],
@@ -55,8 +56,8 @@ Return ONLY JSON:
    "narration": "the spoken words for this scene (1-4 sentences; in dialogue scenes only what the speaker says)"}}]}}
 Use 22-30 scenes."""
 
-CHECK = """Review this fictional Hindi children's story script. Fix anything that mentions real people, organisations, events,
-religion or politics, anything hateful, sexual, scary or violent for young children, and anything copied from a well-known story.
+CHECK = """Review this fictional Hindi story script for a general audience. Fix anything that mentions real people, organisations, events,
+religion or politics, anything hateful, sexual or graphically violent, anything aimed at young children, and anything copied from a well-known story.
 Make sure the first line is a strong hook and the ending has a twist. Keep the same JSON structure. Return ONLY JSON:
 {{"ok": true or false, "issues": ["..."], "script": <full corrected script JSON>}}
 Use "ok": false only if the story cannot be made safe by editing.
@@ -186,7 +187,7 @@ def make_episode(key, cfg):
     fmt = cfg["format"]
     if fmt == "learning":
         topic, notes = LEARN_TOPICS[(n - 1) % len(LEARN_TOPICS)]
-        draft = ask(LEARN.format(series=CAST["series"], topic=topic, notes=notes, past=json.dumps(st[-8:], ensure_ascii=False),
+        draft = ask(LEARN.format(series=CAST.get("series_kids", CAST["series"]), topic=topic, notes=notes, past=json.dumps(st[-8:], ensure_ascii=False),
                                  props=toon.PROPS, settings=SETTINGS))
         chk = ask(LCHECK.format(script=json.dumps(draft, ensure_ascii=False)))
         slow, kind, rule, size = True, "learning lesson", "Each Short teaches ONE thing from the lesson (one letter, number, colour or word) with the same repeat-after-me style.", (1280, 720)

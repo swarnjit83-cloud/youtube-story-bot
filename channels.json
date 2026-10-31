@@ -20,7 +20,7 @@
       2,
       6
     ],
-    "made_for_kids": true,
+    "made_for_kids": false,
     "category": "1",
     "token_env": [
       "YT_TOKEN_STORIES",

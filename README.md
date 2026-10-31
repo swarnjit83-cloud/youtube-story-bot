@@ -5,7 +5,7 @@ Our own cartoon studio plus an upload robot for **three separate YouTube channel
 | Channel | What it makes | Days (UTC) | Made for Kids |
 |---|---|---|---|
 | `kids` | Hindi learning lessons for ages 2-5 (letters, numbers, colours, animals...) | Mon, Wed, Fri | yes |
-| `stories` | Fictional cartoon stories with a recurring cast | Tue, Sat | yes |
+| `stories` | Fictional cartoon stories for a general audience (teens and adults) | Tue, Sat | no |
 | `explainers` | Money / rights / how-things-work videos (fact-checked) | Thu | no |
 
 Every episode also gets 3 Shorts. Everything is uploaded **private**; you review it in YouTube Studio and press Publish.
