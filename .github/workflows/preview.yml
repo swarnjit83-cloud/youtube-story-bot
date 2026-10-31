@@ -1,0 +1,28 @@
+name: Preview pictures
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: sudo apt-get update && sudo apt-get install -y fonts-noto-core
+      - run: pip install Pillow
+      - name: Make sample pictures
+        env:
+          HINDI_FONT: /usr/share/fonts/truetype/noto/NotoSansDevanagari-Bold.ttf
+        run: python story.py preview
+      - name: Save pictures to the repo
+        run: |
+          git config user.name "video-bot" && git config user.email "video-bot@users.noreply.github.com"
+          git add -f preview/*.png
+          git diff --cached --quiet || (git commit -m "Preview pictures" && git pull --rebase -q origin main && git push)

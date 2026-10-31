@@ -105,9 +105,11 @@ def build_video(data, d, name="video", size=(W, H), slide_fn=None, zoom=False):
         asyncio.run(_tts(sc["narration"], mp3))
         slide_fn(sc, png, size)
         vf = []
-        if zoom:  # slow push-in so still images feel alive
-            frames = int(duration(mp3) * 24) + 24
-            vf = ["-vf", f"zoompan=z='min(zoom+0.0005,1.12)':d={frames}:s={size[0]}x{size[1]}:fps=24"]
+        if zoom:  # slow push-in / pull-out with fades, rendered from an upscaled image so it stays smooth
+            dur = duration(mp3); frames = int(dur * 24) + 12; w, h = size
+            z = "min(zoom+0.0006,1.15)" if i % 2 == 0 else "if(eq(on,0),1.15,max(zoom-0.0006,1.0))"
+            vf = ["-vf", f"scale={int(w*1.25)}:{int(h*1.25)},zoompan=z='{z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={frames}:s={w}x{h}:fps=24,"
+                         f"fade=t=in:st=0:d=0.4,fade=t=out:st={max(dur-0.4,0):.2f}:d=0.4,format=yuv420p"]
         subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-loop", "1", "-i", str(png), "-i", str(mp3), *vf,
                         "-c:v", "libx264", "-tune", "stillimage", "-pix_fmt", "yuv420p", "-r", "24",
                         "-c:a", "aac", "-shortest", str(mp4)], check=True)

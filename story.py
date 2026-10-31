@@ -29,7 +29,7 @@ Return ONLY JSON:
 {{"title": "...(Hindi, under 70 chars, curiosity-driven)", "description": "...(Hindi, 2 short paragraphs; first line must say this is a fictional story)",
  "tags": ["..."],
  "scenes": [{{"setting": one of {settings}, "mood": one of {moods}, "characters": ["names from the cast present in the scene, max 2"],
-   "caption": "one short line shown on screen", "narration": "spoken text for this scene (about 100-150 words)"}}]}}
+   "caption": "one short line shown on screen", "image_prompt": "ENGLISH description of what the picture shows: the action, place, time of day and mood (max 40 words, no character appearance details, no text in the picture)", "narration": "spoken text for this scene (about 100-150 words)"}}]}}
 Use 10-14 scenes."""
 
 CHECK = """Review this fictional Hindi story script for a general YouTube audience. Fix anything that mentions real people,
@@ -45,7 +45,7 @@ SHORTS = """From this Hindi story script, write {n} YouTube Shorts that work as 
 hook in the first line, tells only the setup, 30-45 seconds when read aloud (80-110 Hindi words), 3-4 scenes, and
 ends by inviting viewers to watch the full story. Do not reveal the twist. Return ONLY JSON:
 {{"shorts": [{{"title": "...(Hindi, under 60 chars)", "scenes": [{{"setting": ..., "mood": ..., "characters": [...],
- "caption": "...", "narration": "..."}}]}}]}}
+ "caption": "...", "image_prompt": "ENGLISH picture description as above", "narration": "..."}}]}}]}}
 Use the same setting/mood values as in the script.
 
 Script:
@@ -123,7 +123,7 @@ def _person(d, cx, base, size, ch, mood, talk=False):
     else: d.arc([cx - size * .12, hy + size * .02, cx + size * .12, hy + size * .16], 20, 160, fill=(60, 30, 30), width=5)
 
 
-def scene_image(sc, path, size=(1920, 1080)):
+def drawn_scene(sc, path, size=(1920, 1080)):
     from PIL import Image, ImageDraw, ImageFont
     w, h = size
     mood = sc.get("mood", "calm"); mood = mood if mood in MOODS else "calm"
@@ -142,6 +142,57 @@ def scene_image(sc, path, size=(1920, 1080)):
     d.rounded_rectangle([w * 0.07, top_y, w * 0.93, top_y + box_h], radius=24, fill=(0, 0, 0))
     for j, ln in enumerate(lines): d.text((w * 0.1, top_y + 15 + j * lh), ln, font=font, fill=(255, 255, 255))
     img.save(path)
+
+
+def ai_image(prompt, size, seed):
+    """Free AI illustration (Pollinations). Returns a PIL image or None so the caller can fall back to drawing."""
+    import io, time, urllib.parse, urllib.request
+    from PIL import Image
+    gw, gh = (1280, 720) if size[0] > size[1] else (720, 1280)
+    url = (f"https://image.pollinations.ai/prompt/{urllib.parse.quote(prompt)}"
+           f"?width={gw}&height={gh}&model=flux&seed={seed}&nologo=true")
+    for attempt in range(3):
+        try:
+            data = urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"}), timeout=120).read()
+            return Image.open(io.BytesIO(data)).convert("RGB")
+        except Exception as e:
+            print(f"image attempt {attempt + 1} failed: {e}")
+            time.sleep(6 * (attempt + 1))
+    return None
+
+
+def full_prompt(sc):
+    by_name = {c["name"]: c for c in CAST["characters"]}
+    looks = "; ".join(by_name[n]["look"] for n in sc.get("characters", []) if n in by_name)
+    parts = [CAST.get("style", ""), sc.get("image_prompt", ""), looks]
+    return ", ".join(p for p in parts if p)
+
+
+def caption_overlay(img, caption, size):
+    from PIL import Image, ImageDraw, ImageFont
+    w, h = size
+    font = ImageFont.truetype(P.FONT, int(h * (0.032 if h > w else 0.03)))
+    d = ImageDraw.Draw(img)
+    lines = P.wrap(d, caption, font, int(w * 0.82)); lh = int(font.size * 1.5)
+    top_y = int(h * (0.86 if h <= w else 0.80)); box_h = lh * len(lines) + 30
+    layer = Image.new("RGBA", size, (0, 0, 0, 0)); ld = ImageDraw.Draw(layer)
+    ld.rounded_rectangle([w * 0.07, top_y, w * 0.93, top_y + box_h], radius=24, fill=(0, 0, 0, 170))
+    img = Image.alpha_composite(img.convert("RGBA"), layer).convert("RGB"); d = ImageDraw.Draw(img)
+    for j, ln in enumerate(lines): d.text((w * 0.1, top_y + 15 + j * lh), ln, font=font, fill=(255, 255, 255))
+    return img
+
+
+def scene_image(sc, path, size=(1920, 1080)):
+    """AI illustration when available (USE_AI_IMAGES=0 disables), otherwise the drawn scene."""
+    import os
+    from PIL import Image, ImageOps
+    if os.environ.get("USE_AI_IMAGES", "1") != "0" and sc.get("image_prompt"):
+        seed = sum(ord(ch) for ch in sc.get("caption", "")) % 100000
+        im = ai_image(full_prompt(sc), size, seed)
+        if im is not None:
+            im = caption_overlay(ImageOps.fit(im, size, Image.LANCZOS), sc.get("caption", ""), size)
+            im.save(path); return
+    drawn_scene(sc, path, size)
 
 
 # ---------- pipeline ----------
@@ -163,6 +214,24 @@ def make(upload=False):
     if upload: P.upload(d)
 
 
+def preview():
+    """Make a few sample pictures (no video, no upload) to judge image quality."""
+    d = Path("preview"); d.mkdir(exist_ok=True)
+    samples = [
+        {"setting": "night_forest", "mood": "tense", "characters": ["चंपक", "बिल्लू"], "caption": "Champak and Billu hear a sound in the forest",
+         "image_prompt": "a boy and a cat walking carefully through a moonlit forest, a mysterious glowing light between the trees"},
+        {"setting": "village", "mood": "funny", "characters": ["सरपंच जी", "दादी माँ"], "caption": "The Sarpanch argues with Dadi Maa",
+         "image_prompt": "a headman and a grandmother arguing comically in a sunny village square, villagers laughing behind them"},
+        {"setting": "house_inside", "mood": "calm", "characters": ["दादी माँ", "चंपक"], "caption": "Dadi Maa tells a story",
+         "image_prompt": "a grandmother telling a story to a boy by an oil lamp inside a cosy village house"},
+    ]
+    for i, sc in enumerate(samples, 1):
+        scene_image(sc, d / f"sample{i}_wide.png", (1920, 1080))
+    scene_image(samples[0], d / "sample_vertical.png", (1080, 1920))
+    print("preview images saved in", d)
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "make"
-    make(upload=(cmd == "autopilot"))
+    if cmd == "preview": preview()
+    else: make(upload=(cmd == "autopilot"))

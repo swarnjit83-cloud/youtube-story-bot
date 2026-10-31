@@ -1,9 +1,66 @@
 {
   "series": "गाँव की कहानियाँ",
   "characters": [
-    {"name": "चंपक", "role": "होशियार लड़का", "skin": [224, 172, 130], "outfit": [220, 90, 60]},
-    {"name": "सरपंच जी", "role": "गाँव के मुखिया, थोड़े भोले", "skin": [200, 150, 110], "outfit": [240, 240, 240]},
-    {"name": "दादी माँ", "role": "समझदार, रहस्यमयी कहानियाँ सुनाती हैं", "skin": [210, 165, 130], "outfit": [150, 80, 160]},
-    {"name": "बिल्लू", "role": "शरारती बिल्ली", "skin": [120, 120, 120], "outfit": [120, 120, 120]}
-  ]
+    {
+      "name": "चंपक",
+      "role": "होशियार लड़का",
+      "skin": [
+        224,
+        172,
+        130
+      ],
+      "outfit": [
+        220,
+        90,
+        60
+      ],
+      "look": "a clever 10-year-old Indian village boy with short black hair, big bright eyes, red kurta and beige shorts"
+    },
+    {
+      "name": "सरपंच जी",
+      "role": "गाँव के मुखिया, थोड़े भोले",
+      "skin": [
+        200,
+        150,
+        110
+      ],
+      "outfit": [
+        240,
+        240,
+        240
+      ],
+      "look": "a plump middle-aged Indian village headman with a big white moustache, white kurta-dhoti and an orange turban"
+    },
+    {
+      "name": "दादी माँ",
+      "role": "समझदार, रहस्यमयी कहानियाँ सुनाती हैं",
+      "skin": [
+        210,
+        165,
+        130
+      ],
+      "outfit": [
+        150,
+        80,
+        160
+      ],
+      "look": "a kind elderly Indian grandmother with grey hair in a bun, purple saree and round spectacles"
+    },
+    {
+      "name": "बिल्लू",
+      "role": "शरारती बिल्ली",
+      "skin": [
+        120,
+        120,
+        120
+      ],
+      "outfit": [
+        120,
+        120,
+        120
+      ],
+      "look": "a mischievous grey tabby cat with yellow eyes"
+    }
+  ],
+  "style": "children's picture-book illustration, warm colours, soft lighting, gentle watercolour texture, expressive friendly faces, Indian village setting, no text, no watermark"
 }
