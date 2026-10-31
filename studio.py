@@ -32,7 +32,7 @@ picture exactly matches the word, otherwise leave prop out", "count": a number 1
 "label": "short Hindi label"}}. The drawn props are: apple=सेब, mango=आम, banana=केला, ball=गेंद, star=तारा, flower=फूल,
 balloon=गुब्बारा, heart=दिल, fish=मछली, pomegranate=अनार. Scenes without a card just show the characters talking.
 Return ONLY JSON:
-{{"title": "...(Hindi, under 70 chars)", "description": "...(Hindi, 2 short paragraphs; first line says this video is made for children)",
+{{"title": "...(Hindi, under 70 chars)", "description": "...(Hindi, 2 short paragraphs; do not write that it is made for kids or children)",
  "tags": ["..."],
  "scenes": [{{"setting": one of {settings}, "mood": "calm" or "funny", "characters": ["चंपक", "बिल्लू"],
    "speaker": "चंपक" or "बिल्लू" or "narrator", "wave": "चंपक" (optional), "caption": "short Hindi line, Devanagari letters only",
@@ -48,7 +48,7 @@ sentence, rising tension or comedy, dialogue between the characters, and a surpr
 good lesson. Fictional characters only: never mention real people, organisations, events, religion or politics. Nothing violent
 or frightening beyond very mild suspense.
 Return ONLY JSON:
-{{"title": "...(Hindi, under 70 chars, curiosity-driven)", "description": "...(Hindi, 2 short paragraphs; first line says this is a fictional story for children)",
+{{"title": "...(Hindi, under 70 chars, curiosity-driven)", "description": "...(Hindi, 2 short paragraphs; first line says this is a fictional story; do not write that it is made for kids or children)",
  "tags": ["..."],
  "scenes": [{{"setting": one of {settings}, "mood": one of {moods}, "characters": ["names present, max 3"],
    "speaker": "a character name when that character speaks, or \\"narrator\\"", "caption": "one short Hindi line, Devanagari letters only",
