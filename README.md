@@ -1,4 +1,9 @@
-# YouTube Hindi studio
+# court-video-bot (YouTube Hindi studio)
+
+This project uses **YouTube API Services** (YouTube Data API v3, upload only) to upload the developer's own original videos to the developer's own channels.
+[Privacy Policy](PRIVACY.md) | [Terms of Service](TERMS.md) | [YouTube Terms of Service](https://www.youtube.com/t/terms) | [Google Privacy Policy](https://policies.google.com/privacy) |
+Revoke access: https://myaccount.google.com/permissions
+
 
 Our own cartoon studio plus an upload robot for **three separate YouTube channels** (see `channels.json`):
 
