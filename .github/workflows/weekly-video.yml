@@ -28,6 +28,7 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           HINDI_FONT: /usr/share/fonts/truetype/noto/NotoSansDevanagari-Bold.ttf
+          UPLOAD_MODE: ${{ vars.UPLOAD_MODE || 'package' }}
           YT_PRIVACY: ${{ vars.YT_PRIVACY || 'private' }}
           NICHE: ${{ vars.NICHE || 'everyday money, rules, rights and how things work in India' }}
           YT_TOKEN: ${{ secrets.YT_TOKEN }}
@@ -44,6 +45,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: output
-          path: output
-          retention-days: 7
+          name: episode-${{ github.run_number }}
+          path: output/*/package
+          retention-days: 30

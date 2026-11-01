@@ -227,6 +227,49 @@ def make_explainer(key, cfg):
 
 
 LIMIT_ERRORS = ("uploadLimitExceeded", "quotaExceeded", "dailyLimitExceeded", "rateLimitExceeded")
+CATEGORY_NAMES = {"1": "Film & Animation", "24": "Entertainment", "27": "Education"}
+MODE = os.environ.get("UPLOAD_MODE", "package")  # package = download folder only | api = also upload | both
+
+
+def make_thumbnail(data, path):
+    """1280x720 picture from one of the episode's own cartoon scenes, with the title on top."""
+    import cairocffi as cairo
+    cast = looks()
+    scenes = data.get("scenes", [])
+    pick = next((x for x in scenes if isinstance(x.get("card"), dict) and x["card"]), scenes[0] if scenes else {})
+    sc = clean_scene(pick, cast); sc["caption"] = None
+    surf = cairo.ImageSurface(cairo.FORMAT_ARGB32, 1280, 720); cr = cairo.Context(surf)
+    toon.render_frame(cr, sc, cast, 1280, 720, 1.5, 0.6, 0)
+    toon.put_text(cr, data.get("title", ""), 640, 548, 64, color=(255, 255, 255), box=(20, 20, 40, 215), maxw=1120)
+    surf.write_to_png(str(path))
+
+
+def package(key, cfg, d, items, data):
+    """Folder with the finished videos, a thumbnail and the text to paste into YouTube's upload page."""
+    import shutil
+    pk = d / "package"; pk.mkdir(exist_ok=True)
+    try:
+        make_thumbnail(data, pk / "thumbnail.png")
+    except Exception as e:
+        print("thumbnail skipped:", e)
+    kids = cfg.get("made_for_kids", False)
+    lines = [f"# {cfg.get('title', key)} - {d.name}", "",
+             "Upload each video on youtube.com (Create > Upload videos), paste the title/description/tags below,",
+             f"audience: **{'Yes, it is made for kids' if kids else 'No, it is not made for kids'}**, category: **{CATEGORY_NAMES.get(cfg.get('category', '27'), 'Education')}**, language: Hindi, visibility: Public.",
+             "Use thumbnail.png as the custom thumbnail of the main video (your channel must be phone-verified).", ""]
+    for n, (f, title) in enumerate(items, 1):
+        short = title.endswith("#Shorts")
+        name = f"{n:02d}_{'short' if short else 'video'}.mp4"
+        shutil.copy2(f, pk / name)
+        lines += [f"## {name}", f"Title: {title}", "Description:", "", (data.get("description", "") + ("\n\n#Shorts" if short else "")), "",
+                  "Tags: " + ", ".join(data.get("tags", [])), ""]
+    (pk / "UPLOAD_NOTES.md").write_text("\n".join(lines), encoding="utf-8")
+    summ = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summ:
+        with open(summ, "a", encoding="utf-8") as fh:
+            fh.write(f"### {cfg.get('title', key)}: new episode ready\n\nTitle: **{data.get('title', '')}**\n\n"
+                     f"{len(items)} videos are in the artifact **{d.name}** at the bottom of this page. Download it and follow UPLOAD_NOTES.md.\n\n")
+    return pk
 
 
 def run_channel(key, cfg, creds):
@@ -234,6 +277,10 @@ def run_channel(key, cfg, creds):
     if res is None:
         print(f"[{key}] skipped by the quality check"); return
     d, items, data = res
+    package(key, cfg, d, items, data)
+    print(f"[{key}] package ready in {d / 'package'}")
+    if MODE not in ("api", "both") or creds is None:
+        return
     kids = cfg.get("made_for_kids", False)
     desc = data.get("description", "")
     for n, (f, title) in enumerate(items):
@@ -243,10 +290,7 @@ def run_channel(key, cfg, creds):
         except Exception as e:
             if not any(x in str(e) for x in LIMIT_ERRORS):
                 raise
-            if n == 0:  # the main video did not go up: forget this topic so tomorrow retries it
-                save_state(key, load_state(key)[:-1])
-                raise RuntimeError("YouTube upload limit reached before the main video; will retry on the next run") from e
-            print(f"[{key}] YouTube daily upload limit reached; {len(items) - n} Short(s) skipped for this episode")
+            print(f"[{key}] YouTube upload limit reached; {len(items) - n} video(s) not uploaded by the API (they are in the package)")
             break
 
 
@@ -256,8 +300,8 @@ def run(only=None):
     for key, cfg in CHANNELS.items():
         if only and key != only: continue
         if not only and today not in cfg.get("days", []): continue
-        creds = yt.get_creds(cfg["token_env"], f"token_{key}.json")
-        if creds is None:
+        creds = yt.get_creds(cfg["token_env"], f"token_{key}.json") if MODE in ("api", "both") else None
+        if creds is None and MODE in ("api", "both"):
             print(f"[{key}] no login token yet ({' / '.join(cfg['token_env'])}); skipped"); continue
         print(f"[{key}] making today's episode ({cfg['format']})")
         try:

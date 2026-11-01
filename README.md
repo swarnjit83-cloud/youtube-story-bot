@@ -34,3 +34,10 @@ Renaming a channel later does not affect the login.
 
 YouTube keeps API uploads private until the Google Cloud project passes its audit, so each video needs your tap on Publish.
 Fictional and children's content only uses our own drawn characters; never use real people's footage, voices or likenesses.
+
+## Getting videos public
+YouTube locks API uploads from new projects to private, so the default mode is **package** (`UPLOAD_MODE=package`):
+each run makes a download called `episode-<number>` (bottom of the run page in the Actions tab) with the videos,
+`thumbnail.png` and `UPLOAD_NOTES.md` (title, description, tags and settings to paste). Upload them on youtube.com; about 2 minutes.
+Artifacts are kept 30 days. When Google approves the audit (see `docs/YOUTUBE_API_AUDIT_APPLICATION.md`), set the repository
+variable `UPLOAD_MODE` to `api` or `both`.
