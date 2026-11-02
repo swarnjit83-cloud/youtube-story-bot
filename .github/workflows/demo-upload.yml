@@ -1,0 +1,22 @@
+name: API demo upload
+
+on:
+  workflow_dispatch:
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg fonts-noto-core libcairo2
+      - run: pip install -r requirements.txt
+      - name: Render a short clip and upload it with the YouTube Data API
+        env:
+          HINDI_FONT: /usr/share/fonts/truetype/noto/NotoSansDevanagari-Bold.ttf
+          YT_TOKEN: ${{ secrets.YT_TOKEN }}
+          YT_TOKEN_KIDS: ${{ secrets.YT_TOKEN_KIDS }}
+        run: python studio.py demo

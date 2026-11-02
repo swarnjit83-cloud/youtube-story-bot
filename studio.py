@@ -294,6 +294,26 @@ def run_channel(key, cfg, creds):
             break
 
 
+def demo():
+    """Short upload demonstration for Google's API review: renders a ~10 second clip and uploads it with videos.insert (private)."""
+    cfg = CHANNELS["kids"]
+    creds = yt.get_creds(cfg["token_env"], "token_kids.json")
+    if creds is None:
+        sys.exit("No login token found for the demo upload")
+    d = OUT / "demo"; d.mkdir(parents=True, exist_ok=True)
+    print("Step 1: render a short original cartoon clip (own drawing code + synthetic voice)")
+    data = {"scenes": [{"setting": "village", "mood": "calm", "characters": ["चंपक", "बिल्लू"], "speaker": "चंपक", "wave": "चंपक",
+                        "caption": "नमस्ते बच्चों!", "narration": "नमस्ते बच्चों! यह यूट्यूब ए पी आई अपलोड का एक छोटा परीक्षण है।"}]}
+    video = render_video(data, d, "demo", (1280, 720), slow=True)
+    print(f"Step 2: video file ready: {video} ({video.stat().st_size // 1024} KB)")
+    print("Step 3: calling YouTube Data API v3 videos.insert with scope youtube.upload, privacyStatus=private")
+    vid = yt.upload(creds, video, "API demo upload (private test)",
+                    "Demonstration upload for YouTube API Services review. Original cartoon clip made by the developer.",
+                    ["demo"], True, "27", privacy="private")
+    print(f"Step 4: API response received. Video id: {vid}")
+    print(f"Open YouTube Studio to see the video: https://studio.youtube.com/video/{vid}/edit")
+
+
 def run(only=None):
     today = datetime.datetime.now(datetime.timezone.utc).isoweekday()
     failed = []
@@ -315,3 +335,4 @@ def run(only=None):
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "run"
     if cmd == "run": run(sys.argv[2] if len(sys.argv) > 2 else None)
+    elif cmd == "demo": demo()
