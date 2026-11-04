@@ -396,16 +396,24 @@ def render_scene(scene, cast, audio, out, size=(1280, 720)):
     W, H = size
     dur = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", audio],
                                capture_output=True, text=True, check=True).stdout)
-    n = int(dur * FPS) + 6
+    n = int(math.ceil(dur * FPS))  # ffmpeg stops at end of audio (-shortest); extra frames break the pipe
     env = mouth_envelope(audio, n) if scene.get("speaker") else np.zeros(n)
     surf = cairo.ImageSurface(cairo.FORMAT_ARGB32, W, H); cr = cairo.Context(surf)
     ff = subprocess.Popen(["ffmpeg", "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "bgra", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
                            "-i", audio, "-vf", f"fade=t=in:st=0:d=0.25,fade=t=out:st={max(dur - 0.25, 0):.2f}:d=0.25,format=yuv420p",
                            "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-c:a", "aac", "-shortest", str(out)], stdin=subprocess.PIPE)
-    for i in range(n):
-        render_frame(cr, scene, cast, W, H, i / FPS, float(env[i]), i)
-        surf.flush(); ff.stdin.write(bytes(surf.get_data()))
-    ff.stdin.close(); ff.wait()
+    try:
+        for i in range(n):
+            render_frame(cr, scene, cast, W, H, i / FPS, float(env[i]), i)
+            surf.flush(); ff.stdin.write(bytes(surf.get_data()))
+    except BrokenPipeError:
+        pass  # ffmpeg finished early (audio ended); its exit code below says if it really failed
+    try:
+        ff.stdin.close()
+    except BrokenPipeError:
+        pass
+    if ff.wait() != 0:
+        raise RuntimeError(f"ffmpeg failed with code {ff.returncode} while rendering {out}")
     return out
 
 
